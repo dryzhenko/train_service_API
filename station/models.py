@@ -94,9 +94,8 @@ class Ticket(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
     class Meta:
-        constraints = [
-            UniqueConstraint(fields=["seat", "journey"], name="unique_ticket_seat_journey"),
-        ]
+        unique_together = ["journey", "order"]
+        ordering = ["-order"]
 
     @staticmethod
     def validate_ticket(cargo, seat, train, error_to_raise):
@@ -114,7 +113,14 @@ class Ticket(models.Model):
                 )
 
     def clean(self):
-        if not (1 <= self.seat <= self.journey.train.seats) or not (self.cargo <= self.journey.train.cargo_num):
-            raise ValidationError({
-                ""
-            })
+        Ticket.validate_ticket(
+            self.seat,
+            self.journey.train.seats,
+            ValueError
+        )
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None, **kwargs):
+        self.full_clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )

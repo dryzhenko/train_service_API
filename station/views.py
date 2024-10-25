@@ -98,6 +98,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     pagination_class = OrderSetPagination
 
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
 
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.select_related("train", "route")
