@@ -99,6 +99,21 @@ class TicketSerializer(serializers.ModelSerializer):
         return data
 
 
+class JourneyListSerializer(serializers.ModelSerializer):
+    route_distance = serializers.IntegerField(source="route.distance", read_only=True)
+    train_name = serializers.CharField(source="train.name", read_only=True)
+    train_type = serializers.CharField(source="train.train_type.name", read_only=True)
+    tickets_available = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Journey
+        fields = ("id", "route_distance", "train_name", "train_type", "departure_time", "tickets_available")
+
+
+class TicketListSerializer(TicketSerializer):
+    journey = JourneyListSerializer(many=False, read_only=True)
+
+
 class OrderSerializer(serializers.ModelSerializer):
     tickets = TicketSerializer(many=True, read_only=False, allow_null=False)
 
@@ -117,21 +132,14 @@ class OrderSerializer(serializers.ModelSerializer):
             return order
 
 
+class OrderListSerializer(OrderSerializer):
+    tickets = TicketListSerializer(many=True, read_only=True)
+
+
 class JourneySerializer(serializers.ModelSerializer):
     class Meta:
         model = Journey
         fields = ("id", "route", "train", "departure_time", "arrival_time")
-
-
-class JourneyListSerializer(serializers.ModelSerializer):
-    route_distance = serializers.IntegerField(source="route.distance", read_only=True)
-    train_name = serializers.CharField(source="train.name", read_only=True)
-    train_type = serializers.CharField(source="train.train_type.name", read_only=True)
-    tickets_available = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = Journey
-        fields = ("id", "route_distance", "train_name", "train_type", "departure_time", "tickets_available")
 
 
 class JourneyRetrieveSerializer(JourneySerializer):
