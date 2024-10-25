@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import UniqueConstraint
+from rest_framework.exceptions import ValidationError
 
 
 class Crew(models.Model):
@@ -46,7 +48,7 @@ class Train(models.Model):
     cargo_num = models.IntegerField()
     place_in_cargo = models.IntegerField()
     seats = models.IntegerField()
-    crew = models.ForeignKey(Crew, on_delete=models.CASCADE, related_name="trains")
+    crew = models.ManyToManyField(Crew, related_name="trains")
     train_type = models.ForeignKey(TrainType, on_delete=models.CASCADE, related_name="trains")
 
     def __str__(self):
@@ -60,7 +62,7 @@ class Train(models.Model):
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.created_at)
@@ -91,6 +93,11 @@ class Ticket(models.Model):
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, related_name="tickets")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=["seat", "journey"], name="unique_ticket_seat_journey"),
+        ]
+
     @staticmethod
     def validate_ticket(cargo, seat, train, error_to_raise):
         for ticket_attr_value, ticket_attr_name, train_attr_name in [
@@ -105,3 +112,9 @@ class Ticket(models.Model):
                                           f"must be in range: (1, {count_attrs})."
                     }
                 )
+
+    def clean(self):
+        if not (1 <= self.seat <= self.journey.train.seats) or not (self.cargo <= self.journey.train.cargo_num):
+            raise ValidationError({
+                ""
+            })
