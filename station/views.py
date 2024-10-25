@@ -1,3 +1,4 @@
+from django.db.models import Count, F
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 
@@ -136,6 +137,9 @@ class JourneyViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         if self.action == 'list':
+            queryset = (
+                queryset.select_related("train").annotate(tickets_available=F("train__seats") - Count("ticket"))
+            ).order_by("id")
             return queryset.select_related("train", "route")
         elif self.action == 'retrieve':
             return queryset.select_related("train", "route")
