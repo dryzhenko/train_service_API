@@ -69,6 +69,11 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.prefetch_related("crew")
 
+    @staticmethod
+    def _params_to_ints(qs):
+        """Converts a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in qs.split(",")]
+
     def get_serializer_class(self):
         if self.action == 'list':
             return TrainListSerializer
@@ -79,6 +84,18 @@ class TrainViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
+
+        crew = self.request.query_params.get("crew")
+        train_type = self.request.query_params.get("train_type")
+
+        if crew:
+            crew = self._params_to_ints(crew)
+            queryset = queryset.filter(crew__in=crew)
+
+        if train_type:
+            train_type = self._params_to_ints(train_type)
+            queryset = queryset.filter(train_type_id__in=train_type)
+
         if self.action == 'list':
             queryset = queryset.prefetch_related("crew")
         elif self.action == 'retrieve':
