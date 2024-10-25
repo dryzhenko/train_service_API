@@ -90,12 +90,12 @@ class Journey(models.Model):
 class Ticket(models.Model):
     cargo = models.IntegerField()
     seat = models.IntegerField()
-    journey = models.ForeignKey(Journey, on_delete=models.CASCADE, related_name="tickets")
+    journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
 
     class Meta:
         unique_together = ["journey", "order"]
-        ordering = ["-order"]
+        ordering = ["seat"]
 
     @staticmethod
     def validate_ticket(cargo, seat, train, error_to_raise):

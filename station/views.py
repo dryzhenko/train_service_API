@@ -101,7 +101,7 @@ class TrainViewSet(viewsets.ModelViewSet):
         elif self.action == 'retrieve':
             queryset = queryset.prefetch_related("crew")
 
-        return queryset
+        return queryset.distinct()
 
 
 class OrderSetPagination(PageNumberPagination):

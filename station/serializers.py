@@ -136,3 +136,14 @@ class JourneyListSerializer(serializers.ModelSerializer):
 class JourneyRetrieveSerializer(JourneySerializer):
     route = RouteRetrieveSerializer()
     train = TrainRetrieveSerializer()
+
+    taken_seats = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="seat",
+        source="ticket_set"
+    )
+
+    class Meta:
+        model = Journey
+        fields = ("id", "route", "train", "departure_time", "arrival_time", "taken_seats")
