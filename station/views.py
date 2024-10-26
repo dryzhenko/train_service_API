@@ -142,7 +142,7 @@ class TrainViewSet(viewsets.ModelViewSet):
             OpenApiParameter(
                 "train_type",
                 type={"type": "array", "items": {"type": "string"}},
-                description="Filter by genres",
+                description="Filter by train_type",
             )
         ]
     )
