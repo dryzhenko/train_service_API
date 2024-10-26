@@ -76,6 +76,7 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.prefetch_related("crew")
+    http_method_names = ['get', 'post', 'patch']
 
     @staticmethod
     def _params_to_ints(qs):
