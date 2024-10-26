@@ -125,10 +125,12 @@ class Ticket(models.Model):
                 )
 
     def clean(self):
+        train = self.journey.train
         Ticket.validate_ticket(
-            self.seat,
-            self.journey.train.seats,
-            ValueError
+            cargo=self.cargo,
+            seat=self.seat,
+            train=train,
+            error_to_raise=ValidationError
         )
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None, **kwargs):
