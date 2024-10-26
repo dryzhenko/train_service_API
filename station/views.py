@@ -1,7 +1,11 @@
 from django.db.models import Count, F
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from permissions import IsAdminOrIfAuthenticatedReadOnly
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
+
+from station.permissions import IsAdminOrIfAuthenticatedReadOnly
 
 
 from station.models import (
@@ -29,25 +33,22 @@ from station.serializers import (
     TrainRetrieveSerializer,
     RouteListSerializer,
     RouteRetrieveSerializer,
-    JourneyRetrieveSerializer, OrderListSerializer,
+    JourneyRetrieveSerializer, OrderListSerializer, TrainImageSerializer,
 )
 
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
 
 class StationViewSet(viewsets.ModelViewSet):
     queryset = Station.objects.all()
     serializer_class = StationSerializer
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.select_related("source", "destination")
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -70,12 +71,10 @@ class RouteViewSet(viewsets.ModelViewSet):
 class TrainTypeViewSet(viewsets.ModelViewSet):
     queryset = TrainType.objects.all()
     serializer_class = TrainTypeSerializer
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.prefetch_related("crew")
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
     @staticmethod
     def _params_to_ints(qs):
@@ -87,6 +86,8 @@ class TrainViewSet(viewsets.ModelViewSet):
             return TrainListSerializer
         elif self.action == 'retrieve':
             return TrainRetrieveSerializer
+        elif self.action == "upload_image":
+            return TrainImageSerializer
 
         return TrainSerializer
 
@@ -112,6 +113,24 @@ class TrainViewSet(viewsets.ModelViewSet):
         return queryset.distinct()
 
 
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="upload-image",
+        permission_classes=[IsAdminUser],
+    )
+    def upload_image(self, request, pk=None):
+        """Endpoint for uploading image to specific movie"""
+        train = self.get_object()
+        serializer = self.get_serializer(train, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class OrderSetPagination(PageNumberPagination):
     page_size = 5
     page_size_query_param = "page_size"
@@ -122,7 +141,6 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     pagination_class = OrderSetPagination
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
@@ -144,7 +162,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.select_related("train", "route")
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -170,5 +187,3 @@ class JourneyViewSet(viewsets.ModelViewSet):
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
-    permission_classes = [IsAdminOrIfAuthenticatedReadOnly]
-

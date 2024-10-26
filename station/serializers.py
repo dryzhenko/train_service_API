@@ -66,6 +66,12 @@ class TrainSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "cargo_num", "place_in_cargo", "seats", "crew", "train_type")
 
 
+class TrainImageSerializer(TrainSerializer):
+    class Meta:
+        model = Train
+        fields = ("id", "image")
+
+
 class TrainListSerializer(TrainSerializer):
     crew = serializers.SlugRelatedField(
         many=True,

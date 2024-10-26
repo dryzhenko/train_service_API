@@ -1,6 +1,10 @@
+import os
+import uuid
+
 from django.db import models
 from django.conf import settings
 from django.db.models import UniqueConstraint
+from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
 
 
@@ -43,6 +47,13 @@ class TrainType(models.Model):
         return self.name
 
 
+def movie_image_file_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+
+    return os.path.join("uploads/trains/", filename)
+
+
 class Train(models.Model):
     name = models.CharField(max_length=100)
     cargo_num = models.IntegerField()
@@ -50,6 +61,7 @@ class Train(models.Model):
     seats = models.IntegerField()
     crew = models.ManyToManyField(Crew, related_name="trains")
     train_type = models.ForeignKey(TrainType, on_delete=models.CASCADE, related_name="trains")
+    image = models.ImageField(null=True, upload_to=movie_image_file_path)
 
     def __str__(self):
         return (f"Name: {self.name}, "
