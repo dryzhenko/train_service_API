@@ -34,9 +34,7 @@ def sample_train(**params):
 
 
 def sample_journey(**params):
-    route = Route.objects.create(
-        source_id=1, destination_id=2, distance=100
-    )
+    route = Route.objects.create(source_id=1, destination_id=2, distance=100)
     defaults = {
         "route": route,
         "train": None,

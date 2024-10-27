@@ -7,17 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('station', '0005_alter_ticket_options_and_more'),
+        ("station", "0005_alter_ticket_options_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='ticket',
-            options={'ordering': ['seat']},
+            name="ticket",
+            options={"ordering": ["seat"]},
         ),
         migrations.AlterField(
-            model_name='ticket',
-            name='journey',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='station.journey'),
+            model_name="ticket",
+            name="journey",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="station.journey"
+            ),
         ),
     ]

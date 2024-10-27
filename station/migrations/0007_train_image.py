@@ -7,13 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('station', '0006_alter_ticket_options_alter_ticket_journey'),
+        ("station", "0006_alter_ticket_options_alter_ticket_journey"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='train',
-            name='image',
-            field=models.ImageField(null=True, upload_to=station.models.movie_image_file_path),
+            model_name="train",
+            name="image",
+            field=models.ImageField(
+                null=True, upload_to=station.models.movie_image_file_path
+            ),
         ),
     ]

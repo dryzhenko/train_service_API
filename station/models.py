@@ -30,14 +30,24 @@ class Station(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Station, on_delete=models.CASCADE, related_name="source")
-    destination = models.ForeignKey(Station, on_delete=models.CASCADE, related_name="destination")
+    source = models.ForeignKey(
+        Station,
+        on_delete=models.CASCADE,
+        related_name="source"
+    )
+    destination = models.ForeignKey(
+        Station,
+        on_delete=models.CASCADE,
+        related_name="destination"
+    )
     distance = models.IntegerField()
 
     def __str__(self):
-        return (f"Source: {self.source}, "
-                f"Destination: {self.destination}, "
-                f"Distance: {self.distance}")
+        return (
+            f"Source: {self.source}, "
+            f"Destination: {self.destination}, "
+            f"Distance: {self.distance}"
+        )
 
 
 class TrainType(models.Model):
@@ -60,21 +70,31 @@ class Train(models.Model):
     place_in_cargo = models.IntegerField()
     seats = models.IntegerField()
     crew = models.ManyToManyField(Crew, related_name="trains")
-    train_type = models.ForeignKey(TrainType, on_delete=models.CASCADE, related_name="trains")
-    image = models.ImageField(null=True, upload_to=movie_image_file_path)
+    train_type = models.ForeignKey(
+        TrainType, on_delete=models.CASCADE, related_name="trains"
+    )
+    image = models.ImageField(
+        null=True,
+        upload_to=movie_image_file_path
+    )
 
     def __str__(self):
-        return (f"Name: {self.name}, "
-                f"Num of cargo: {self.cargo_num}, "
-                f"Place in cargo: {self.place_in_cargo}, "
-                f"Seats: {self.seats}, "
-                f"Crew: {self.crew}"
-                f"Train type: {self.train_type}")
+        return (
+            f"Name: {self.name}, "
+            f"Num of cargo: {self.cargo_num}, "
+            f"Place in cargo: {self.place_in_cargo}, "
+            f"Seats: {self.seats}, "
+            f"Crew: {self.crew}"
+            f"Train type: {self.train_type}"
+        )
 
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return str(self.created_at)
@@ -84,8 +104,16 @@ class Order(models.Model):
 
 
 class Journey(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="journeys")
-    train = models.ForeignKey(Train, on_delete=models.CASCADE, related_name="journeys")
+    route = models.ForeignKey(
+        Route,
+        on_delete=models.CASCADE,
+        related_name="journeys"
+    )
+    train = models.ForeignKey(
+        Train,
+        on_delete=models.CASCADE,
+        related_name="journeys"
+    )
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
@@ -93,17 +121,26 @@ class Journey(models.Model):
         ordering = ["-departure_time"]
 
     def __str__(self):
-        return (f"Route: {self.route}, "
-                f"Train {self.train}, "
-                f"Departure time: {self.departure_time}, "
-                f"Arrival time: {self.arrival_time}")
+        return (
+            f"Route: {self.route}, "
+            f"Train {self.train}, "
+            f"Departure time: {self.departure_time}, "
+            f"Arrival time: {self.arrival_time}"
+        )
 
 
 class Ticket(models.Model):
     cargo = models.IntegerField()
     seat = models.IntegerField()
-    journey = models.ForeignKey(Journey, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    journey = models.ForeignKey(
+        Journey,
+        on_delete=models.CASCADE
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
 
     class Meta:
         unique_together = ["journey", "order"]
@@ -120,7 +157,7 @@ class Ticket(models.Model):
                 raise error_to_raise(
                     {
                         ticket_attr_name: f"{ticket_attr_name.capitalize()} "
-                                          f"must be in range: (1, {count_attrs})."
+                        f"must be in range: (1, {count_attrs})."
                     }
                 )
 
@@ -130,10 +167,17 @@ class Ticket(models.Model):
             cargo=self.cargo,
             seat=self.seat,
             train=train,
-            error_to_raise=ValidationError
+            error_to_raise=ValidationError,
         )
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None, **kwargs):
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+        **kwargs,
+    ):
         self.full_clean()
         return super(Ticket, self).save(
             force_insert, force_update, using, update_fields

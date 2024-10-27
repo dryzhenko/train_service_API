@@ -7,7 +7,7 @@ from station.models import (
     Train,
     Order,
     Journey,
-    Ticket
+    Ticket,
 )
 
 

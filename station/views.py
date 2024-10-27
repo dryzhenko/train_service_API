@@ -17,7 +17,7 @@ from station.models import (
     Train,
     Order,
     Journey,
-    Ticket
+    Ticket,
 )
 
 from station.serializers import (
@@ -34,7 +34,9 @@ from station.serializers import (
     TrainRetrieveSerializer,
     RouteListSerializer,
     RouteRetrieveSerializer,
-    JourneyRetrieveSerializer, OrderListSerializer, TrainImageSerializer,
+    JourneyRetrieveSerializer,
+    OrderListSerializer,
+    TrainImageSerializer,
 )
 
 
@@ -52,18 +54,18 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.select_related("source", "destination")
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return RouteListSerializer
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             return RouteRetrieveSerializer
 
         return RouteSerializer
 
     def get_queryset(self):
         queryset = self.queryset
-        if self.action == 'list':
+        if self.action == "list":
             queryset = queryset.select_related("source", "destination")
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             queryset = queryset.select_related("source", "destination")
 
         return queryset
@@ -76,7 +78,7 @@ class TrainTypeViewSet(viewsets.ModelViewSet):
 
 class TrainViewSet(viewsets.ModelViewSet):
     queryset = Train.objects.prefetch_related("crew")
-    http_method_names = ['get', 'post', 'patch']
+    http_method_names = ["get", "post", "patch"]
 
     @staticmethod
     def _params_to_ints(qs):
@@ -84,9 +86,9 @@ class TrainViewSet(viewsets.ModelViewSet):
         return [int(str_id) for str_id in qs.split(",")]
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return TrainListSerializer
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             return TrainRetrieveSerializer
         elif self.action == "upload_image":
             return TrainImageSerializer
@@ -107,13 +109,12 @@ class TrainViewSet(viewsets.ModelViewSet):
             train_type = self._params_to_ints(train_type)
             queryset = queryset.filter(train_type_id__in=train_type)
 
-        if self.action == 'list':
+        if self.action == "list":
             queryset = queryset.prefetch_related("crew")
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             queryset = queryset.prefetch_related("crew")
 
         return queryset.distinct()
-
 
     @action(
         methods=["POST"],
@@ -143,7 +144,7 @@ class TrainViewSet(viewsets.ModelViewSet):
                 "train_type",
                 type={"type": "array", "items": {"type": "string"}},
                 description="Filter by train_type",
-            )
+            ),
         ]
     )
     def list(self, request, *args, **kwargs):
@@ -183,21 +184,23 @@ class JourneyViewSet(viewsets.ModelViewSet):
     queryset = Journey.objects.select_related("train", "route")
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return JourneyListSerializer
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             return JourneyRetrieveSerializer
 
         return JourneySerializer
 
     def get_queryset(self):
         queryset = self.queryset
-        if self.action == 'list':
+        if self.action == "list":
             queryset = (
-                queryset.select_related("train").annotate(tickets_available=F("train__seats") - Count("ticket"))
+                queryset.select_related("train").annotate(
+                    tickets_available=F("train__seats") - Count("ticket")
+                )
             ).order_by("id")
             return queryset.select_related("train", "route")
-        elif self.action == 'retrieve':
+        elif self.action == "retrieve":
             return queryset.select_related("train", "route")
 
         return queryset
